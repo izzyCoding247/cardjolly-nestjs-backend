@@ -1,8 +1,10 @@
 import { INestApplication } from '@nestjs/common';
+import { ConfigType } from '@nestjs/config';
 import { Test } from '@nestjs/testing';
 import request from 'supertest';
 import { App } from 'supertest/types';
 import { AppModule } from '../src/app.module';
+import { appConfig } from '../src/config/config.sections';
 
 describe('App (e2e)', () => {
   let app: INestApplication<App>;
@@ -28,5 +30,11 @@ describe('App (e2e)', () => {
         error: 'Not Found',
         statusCode: 404,
       });
+  });
+
+  it('applies the PORT and HOST defaults', () => {
+    const config = app.get<ConfigType<typeof appConfig>>(appConfig.KEY);
+    expect(config.port).toBe(5000);
+    expect(config.host).toBe('0.0.0.0');
   });
 });
