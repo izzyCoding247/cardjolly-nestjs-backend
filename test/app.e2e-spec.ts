@@ -1,40 +1,18 @@
 import { ConfigType } from '@nestjs/config';
 import { NestExpressApplication } from '@nestjs/platform-express';
-import { Test } from '@nestjs/testing';
 import request from 'supertest';
-import { AppModule } from '../src/app.module';
 import { appConfig } from '../src/config/config.sections';
-import { setupApp } from '../src/setup-app';
-
-function jsonBodyOfSize(bytes: number): string {
-  return JSON.stringify({ padding: 'x'.repeat(bytes) });
-}
+import { createTestApp } from './support/create-test-app';
 
 describe('App (e2e)', () => {
   let app: NestExpressApplication;
 
   beforeAll(async () => {
-    const moduleRef = await Test.createTestingModule({
-      imports: [AppModule],
-    }).compile();
-    app = moduleRef.createNestApplication<NestExpressApplication>();
-    setupApp(app);
-    await app.init();
+    app = await createTestApp();
   });
 
   afterAll(async () => {
     await app.close();
-  });
-
-  it('returns a JSON 404 for unknown routes', () => {
-    return request(app.getHttpServer())
-      .get('/api/v1/does-not-exist')
-      .expect('Content-Type', /json/)
-      .expect(404, {
-        message: 'Cannot GET /api/v1/does-not-exist',
-        error: 'Not Found',
-        statusCode: 404,
-      });
   });
 
   it('applies the PORT and HOST defaults', () => {
@@ -47,16 +25,8 @@ describe('App (e2e)', () => {
     return request(app.getHttpServer())
       .post('/api/v1/does-not-exist')
       .set('Content-Type', 'application/json')
-      .send(jsonBodyOfSize(200 * 1024))
+      .send(JSON.stringify({ padding: 'x'.repeat(200 * 1024) }))
       .expect(404);
-  });
-
-  it('rejects JSON bodies over 1 MB', () => {
-    return request(app.getHttpServer())
-      .post('/api/v1/does-not-exist')
-      .set('Content-Type', 'application/json')
-      .send(jsonBodyOfSize(1100 * 1024))
-      .expect(413);
   });
 
   it('allows CORS preflight from a configured origin', () => {

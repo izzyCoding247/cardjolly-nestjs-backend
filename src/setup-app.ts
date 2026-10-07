@@ -1,7 +1,10 @@
-import { HttpStatus, ValidationPipe } from '@nestjs/common';
+import { ValidationPipe } from '@nestjs/common';
 import { ConfigType } from '@nestjs/config';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import helmet from 'helmet';
+import { ValidationException } from './common/errors/validation.exception';
+import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
+import { ResponseInterceptor } from './common/interceptors/response.interceptor';
 import { appConfig } from './config/config.sections';
 
 export function setupApp(app: NestExpressApplication): void {
@@ -18,8 +21,10 @@ export function setupApp(app: NestExpressApplication): void {
       whitelist: true,
       forbidNonWhitelisted: true,
       transform: true,
-      errorHttpStatusCode: HttpStatus.UNPROCESSABLE_ENTITY,
+      exceptionFactory: (errors) => ValidationException.fromErrors(errors),
     }),
   );
+  app.useGlobalFilters(new AllExceptionsFilter());
+  app.useGlobalInterceptors(new ResponseInterceptor());
   app.enableShutdownHooks();
 }
