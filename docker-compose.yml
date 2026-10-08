@@ -1,6 +1,7 @@
 services:
   postgres:
     image: postgres:18-alpine
+    restart: unless-stopped
     environment:
       POSTGRES_USER: cardjolly
       POSTGRES_PASSWORD: cardjolly
@@ -17,6 +18,7 @@ services:
 
   postgres-test:
     image: postgres:18-alpine
+    restart: unless-stopped
     environment:
       POSTGRES_USER: cardjolly
       POSTGRES_PASSWORD: cardjolly
@@ -33,6 +35,7 @@ services:
 
   redis:
     image: redis:8-alpine
+    restart: unless-stopped
     ports:
       - '6379:6379'
     healthcheck:
