@@ -55,7 +55,7 @@ pnpm build
 ```
 
 End-to-end tests load `.env.test` and refuse to run unless `DATABASE_URL` points to a local `*_test` database.
-They need the Docker services running. Before each run they apply all migrations to the test database. For an empty test database, run `docker compose restart postgres-test` (its data lives in memory).
+They need the Docker services running (both Postgres containers and Redis; tests use Redis database 1). Before each run they apply all migrations to the test database. For an empty test database, run `docker compose restart postgres-test` (its data lives in memory).
 
 ## Database
 

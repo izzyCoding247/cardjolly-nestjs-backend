@@ -1,6 +1,8 @@
-const LOCAL_HOSTS = new Set(['localhost', '127.0.0.1', '[::1]']);
+export const LOCAL_HOSTS = new Set(['localhost', '127.0.0.1', '[::1]']);
 
-export function assertTestDatabase(databaseUrl: string | undefined): void {
+export function assertTestDatabase(
+  databaseUrl: string | undefined,
+): asserts databaseUrl is string {
   if (!databaseUrl) {
     throw new Error('DATABASE_URL is not set for e2e tests');
   }
