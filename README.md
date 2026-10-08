@@ -55,3 +55,15 @@ pnpm build
 ```
 
 End-to-end tests load `.env.test` and refuse to run unless `DATABASE_URL` points to a local `*_test` database.
+They need the Docker services running. Before each run they apply all migrations to the test database. For an empty test database, run `docker compose restart postgres-test` (its data lives in memory).
+
+## Database
+
+After changing `prisma/schema.prisma`:
+
+```bash
+pnpm prisma migrate dev
+pnpm prisma generate
+```
+
+Prisma 7's `migrate dev` no longer runs `generate` for you. `pnpm install` also regenerates the client.

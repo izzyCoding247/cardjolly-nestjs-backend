@@ -5,8 +5,10 @@ import {
   HttpException,
   HttpStatus,
   Logger,
+  ServiceUnavailableException,
 } from '@nestjs/common';
 import type { Response } from 'express';
+import { Prisma } from '../../generated/prisma/client';
 import { errorCodeFor } from '../errors/error-codes';
 import { ValidationException } from '../errors/validation.exception';
 
@@ -15,6 +17,14 @@ interface ErrorDetails {
   message: string;
   fields?: Record<string, string>;
 }
+
+const PRISMA_ERRORS: Partial<Record<string, ErrorDetails>> = {
+  P2002: {
+    status: HttpStatus.CONFLICT,
+    message: 'A record with these values already exists',
+  },
+  P2025: { status: HttpStatus.NOT_FOUND, message: 'Record not found' },
+};
 
 function isClientHttpError(
   error: unknown,
@@ -55,13 +65,23 @@ export class AllExceptionsFilter implements ExceptionFilter {
     if (isClientHttpError(exception)) {
       return { status: exception.status, message: exception.message };
     }
+    if (exception instanceof Prisma.PrismaClientKnownRequestError) {
+      const known = PRISMA_ERRORS[exception.code];
+      if (known !== undefined) {
+        return known;
+      }
+    }
     this.logger.error(exception instanceof Error ? exception.stack : exception);
+    const status =
+      exception instanceof HttpException
+        ? exception.getStatus()
+        : HttpStatus.INTERNAL_SERVER_ERROR;
     return {
-      status:
-        exception instanceof HttpException
-          ? exception.getStatus()
-          : HttpStatus.INTERNAL_SERVER_ERROR,
-      message: 'Internal server error',
+      status,
+      message:
+        exception instanceof ServiceUnavailableException
+          ? 'Service unavailable'
+          : 'Internal server error',
     };
   }
 }

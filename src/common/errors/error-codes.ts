@@ -12,6 +12,7 @@ const CODES_BY_STATUS: Partial<Record<number, string>> = {
   [HttpStatus.UNPROCESSABLE_ENTITY]: 'VALIDATION_FAILED',
   [HttpStatus.TOO_MANY_REQUESTS]: 'TOO_MANY_REQUESTS',
   [HttpStatus.INTERNAL_SERVER_ERROR]: 'INTERNAL_ERROR',
+  [HttpStatus.SERVICE_UNAVAILABLE]: 'SERVICE_UNAVAILABLE',
 };
 
 export function errorCodeFor(status: number): string {

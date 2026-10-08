@@ -5,11 +5,14 @@ import {
   HttpException,
   HttpStatus,
   MethodNotAllowedException,
+  Param,
   Post,
+  ServiceUnavailableException,
 } from '@nestjs/common';
 import { Type } from 'class-transformer';
 import { IsString, ValidateNested } from 'class-validator';
 import { paginate } from '../../src/common/pagination/paginate';
+import { Prisma } from '../../src/generated/prisma/client';
 
 class AddressDto {
   @IsString()
@@ -55,5 +58,18 @@ export class ContractTestController {
   @Get('crash')
   crash(): never {
     throw new Error('connection refused at db-internal:5432');
+  }
+
+  @Get('prisma/:code')
+  prismaFailure(@Param('code') code: string): never {
+    throw new Prisma.PrismaClientKnownRequestError(`Prisma error ${code}`, {
+      code,
+      clientVersion: Prisma.prismaVersion.client,
+    });
+  }
+
+  @Get('unavailable')
+  unavailable(): never {
+    throw new ServiceUnavailableException();
   }
 }

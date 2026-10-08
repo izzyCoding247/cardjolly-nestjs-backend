@@ -121,4 +121,40 @@ describe('Response contract (e2e)', () => {
       });
     expect(response.text).not.toContain('db-internal');
   });
+
+  it('maps a Prisma unique violation to CONFLICT', () => {
+    return request(app.getHttpServer())
+      .get(`${BASE}/prisma/P2002`)
+      .expect(409, {
+        error: {
+          code: 'CONFLICT',
+          message: 'A record with these values already exists',
+        },
+      });
+  });
+
+  it('maps a missing Prisma record to NOT_FOUND', () => {
+    return request(app.getHttpServer())
+      .get(`${BASE}/prisma/P2025`)
+      .expect(404, {
+        error: { code: 'NOT_FOUND', message: 'Record not found' },
+      });
+  });
+
+  it('hides other Prisma errors behind INTERNAL_ERROR', async () => {
+    const response = await request(app.getHttpServer())
+      .get(`${BASE}/prisma/P2003`)
+      .expect(500, {
+        error: { code: 'INTERNAL_ERROR', message: 'Internal server error' },
+      });
+    expect(response.text).not.toContain('P2003');
+  });
+
+  it('returns SERVICE_UNAVAILABLE', () => {
+    return request(app.getHttpServer())
+      .get(`${BASE}/unavailable`)
+      .expect(503, {
+        error: { code: 'SERVICE_UNAVAILABLE', message: 'Service unavailable' },
+      });
+  });
 });
